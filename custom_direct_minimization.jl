@@ -4,7 +4,7 @@ using Optim
 using LineSearches
 
 # solving H(ψ)ψ = f
-function custom_direct_minimization(basis::PlaneWaveBasis{T}, source_term;
+function custom_direct_minimization(basis::PlaneWaveBasis{T}, source_term, ψ0;
                                     prec_type=PreconditionerTPA,
                                     optim_solver=Optim.LBFGS, tol=1e-6, kwargs...) where {T}
     if mpi_nprocs() > 1
@@ -19,7 +19,6 @@ function custom_direct_minimization(basis::PlaneWaveBasis{T}, source_term;
     n_bands = div(model.n_electrons, n_spin * filled_occ, RoundUp)
     Nk = length(basis.kpoints)
 
-    ψ0 = [DFTK.random_orbitals(basis, kpt, n_bands) for kpt in basis.kpoints]
     occupation = [filled_occ * ones(T, n_bands) for ik = 1:Nk]
 
     # we need to copy the reinterpret array here to not raise errors in Optim.jl

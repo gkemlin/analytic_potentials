@@ -43,6 +43,7 @@ plot([B,B], [-0.8, 0.8], "r--", label="\$ B_0 \$")
 plot([-B,-B], [-0.8, 0.8], "r--")
 xlabel("\$ y \$")
 legend(loc="upper left", framealpha=1.)
+
 subplot(122)
 rs = range(-0.1, 0.1, length=400)
 is = range(-0.1, 0.1, length=400)
@@ -74,14 +75,15 @@ source_term = ExternalFromReal(r -> f(r[1]))
 ε_list = [0., 1e-5, 5e-5, 0.0001, 0.001]
 
 # cut function to avoid numerical noise
-seuil(x) = abs(x) < 1e-9 ? zero(x) : x
+seuil(x) = abs(x) < 1e-12 ? zero(x) : x
 
 figure(2, figsize=(20,10))
 ftsize = 30
 rc("font", size=ftsize, serif="Computer Modern")
 rc("text", usetex=true)
+marker_list = ["P", "X", "^", "o", "D"]
 
-for ε in ε_list
+for (i,ε) in enumerate(ε_list)
     println("---------------------------------")
     println("ε = $(ε)")
     terms = [Kinetic(;scaling_factor=2*ε), # 2 is here to cancel 1/2 term in Kinetic definition
@@ -92,47 +94,53 @@ for ε in ε_list
                   symmetries=false)
 
     basis = PlaneWaveBasis(model; Ecut, kgrid)
+    # u0 solution for ε = 0
+    u0r = ExternalFromReal(r->u0(r[1]))
+    u0G = r_to_G(basis, basis.kpoints[1],
+                 ComplexF64.(u0r(basis).potential_values))
+    ψ0 = [reshape(u0G, length(u0G), 1)]
     if ε != 0.0
-        scfres = custom_direct_minimization(basis, source_term; tol)
+        scfres = custom_direct_minimization(basis, source_term, ψ0; tol)
         println(scfres.energies)
         # check that u is indeed a solution
         ψ = scfres.ψ[1][:, 1]
         Hψ = scfres.ham.blocks[1] * ψ
         Hψr = G_to_r(basis, basis.kpoints[1], Hψ)[:,1,1]
-        println("|Hψ-f| = ", real(sum(Hψr - source_term(basis).potential_values[:,1,1])*basis.dvol))
+        println("|Hψ-f| = ", abs(real(sum(Hψr - source_term(basis).potential_values[:,1,1])*basis.dvol)))
     else
-        # u0 solution for ε = 0
-        u0r = ExternalFromReal(r->u0(r[1]))
-        ψ   = r_to_G(basis, basis.kpoints[1],
-                     ComplexF64.(u0r(basis).potential_values))
+        ψ = ψ0[1][:,1]
     end
 
     # plot
     Gs = [abs(G[1]) for G in G_vectors(basis, basis.kpoints[1])][:]
     GGs = Gs[2:div(length(Gs)+1,2)]
     nG = length(GGs)
+    m = marker_list[i]
     # select every two component (the others are zero)
     ψG = [ψ[2*k] for k =1:div(nG,2)]
     GGGs = [GGs[2*k] for k =1:div(nG,2)]
     ψGn = ψG[2:end]
     subplot(121)
-    semilogy(GGGs, (seuil.(abs.(ψG))), "+", label="\$ \\varepsilon = $(ε) \$")
+    semilogy(GGGs, (seuil.(abs.(ψG))), m, label="\$ \\varepsilon = $(ε) \$",
+             markersize=10, markevery=2)
     subplot(122)
     if ε != 0
-        plot(GGGs[2:end], log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), "+", label="\$ \\varepsilon = $(ε) \$")
+        plot(GGGs[2:end], log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m, label="\$ \\varepsilon = $(ε) \$",
+             markersize=10, markevery=4)
     else
-        plot(GGGs[2:end], log.(abs.( ψGn ./ ψG[1:end-1] )), "+", label="\$ \\varepsilon = $(ε) \$")
+        plot(GGGs[2:end], log.(abs.( ψGn ./ ψG[1:end-1] )), m, label="\$ \\varepsilon = $(ε) \$",
+             markersize=10, markevery=4)
     end
 end
 
 # end up with legend and x labels
 subplot(121)
 xlabel("\$ |k| \$")
-xlim(-20, 400)
+xlim(-20, 500)
 legend()
 subplot(122)
 xlabel("\$ |k| \$")
-xlim(-20,400)
+xlim(-20,500)
 ylim(-1, 0)
 legend()
 savefig("test_decay.png")
