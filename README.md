@@ -22,7 +22,7 @@ location of this repository:
 ```
 julia --project gross_pitaevskii_egval.jl
 ```
-Plots are then save in `test_decay_gp.png` and `u0_gp.png`.
+Plots are then saved in `test_decay_gp.png` and `u0_gp.png`.
 
 
 ## Nonlinear elliptic equation
@@ -31,7 +31,7 @@ location of this repository:
 ```
 julia --project gross_pitaevskii_source_term.jl
 ```
-Plots are then save in `test_decay.png` and `u0.png`.
+Plots are then saved in `test_decay.png` and `u0.png`.
 
 # Contact
 This is research code, not necessarily user-friendly, actively maintened or
