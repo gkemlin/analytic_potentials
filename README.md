@@ -17,7 +17,7 @@ Pkg.instantiate()
 to install the required dependencies.
 
 ## Nonlinear Gross-Pitaevskii equation
-To generate the plots from Section 4.2.2 of the paper, just run from the
+To generate the plots from Section 4.2.1 of the paper, just run from the
 location of this repository:
 ```
 julia --project gross_pitaevskii_egval.jl
