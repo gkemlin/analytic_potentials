@@ -35,8 +35,5 @@ Plots are then saved in `test_decay.png` and `u0.png`.
 
 # Contact
 This is research code, not necessarily user-friendly, actively maintened or
-extremely robust. For a first contact with the implementation, looking at the
-[example](https://docs.dftk.org/stable/examples/error_estimates_forces/)
-mentionned above is maybe advised. If you have questions or encounter problems,
-get in touch!
+extremely robust. If you have questions or encounter problems, get in touch!
 
