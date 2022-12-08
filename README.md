@@ -1,6 +1,6 @@
 Julia code to generate the plots used in the counter examples sections of our
 paper on the solutions to Schrödinger equations with analytic potentials,
-available on [arXiv](https://arxiv.org/abs/2207.12190).
+available on [arXiv](https://arxiv.org/abs/2206.04954).
 
 # Dependencies
 Julia 1.8 with the following libraries:
