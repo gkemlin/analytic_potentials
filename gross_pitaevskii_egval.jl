@@ -44,17 +44,18 @@ subplot(121)
 plot(Is, fr.((1im).*Is), label="\$ {\\rm Re}(u_0({\\rm i} y)) \$")
 plot(Is, fi.((1im).*Is), label="\$ {\\rm Im}(u_0({\\rm i} y)) \$")
 xlabel("\$ y \$")
-plot(B, 0, "ro", label="\$ \\pm B_0 \$")
-plot(-B, 0, "ro")
+plot(B, 0, "ro", label="\$ \\pm B_0 \$", markersize=10)
+plot(-B, 0, "ro", markersize=10)
 legend()
 
 subplot(122)
 res = [u0(x + im*y) for x in rs, y in is]
 pcolormesh(rs, is, angle.(res)')
-plot(0, B, "ro")
-plot(0, -B, "ro")
+plot(0, B, "ro", markersize=10)
+plot(0, -B, "ro", markersize=10)
 xlabel("\$ x \$")
 ylabel("\$ y \$")
+colorbar()
 savefig("u0_gp.png")
 
 # Set up DFTK framework for Gross-Pitaevskii
