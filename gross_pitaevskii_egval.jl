@@ -8,7 +8,7 @@ C = 1/2
 α = 2
 
 λ0 = α * C / (2π)
-β = 1 + 1e-4
+β = 1 + 1e-5
 γ = λ0 / β
 V(x) = γ * cos(x)
 
@@ -65,7 +65,7 @@ a = 2π
 lattice = a * [[1 0 0.]; [0 0 0]; [0 0 0]]
 
 # list of ε's for different numerical simulations
-ε_list = [0.0, 1e-7, 1e-5, 1e-3, 1e-1]
+ε_list = [0.0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
 
 # cut function to avoid numerical noise
 seuil(x) = abs(x) > tol ? x : 0.0
@@ -74,14 +74,14 @@ figure(2, figsize=(20,10))
 ftsize = 30
 rc("font", size=ftsize, serif="Computer Modern")
 rc("text", usetex=true)
-marker_list = ["P", "X", "^", "o", "D"]
+marker_list = ["P", "X", "^", "o", "D", "s"]
 
 for (i,ε) in enumerate(ε_list)
     println("---------------------------------")
     println("ε = $(ε)")
-    terms = [Kinetic(; scaling_factor=2),
-             ExternalFromReal(r -> V(r[1])/ε),
-             LocalNonlinearity(ρ -> C*(ρ^α)/ε),
+    terms = [Kinetic(; scaling_factor=2*ε),
+             ExternalFromReal(r -> V(r[1])),
+             LocalNonlinearity(ρ -> C*(ρ^α)),
             ]
     model = Model(lattice; n_electrons=1, terms, spin_polarization=:spinless,
                   symmetries=false)
@@ -97,6 +97,10 @@ for (i,ε) in enumerate(ε_list)
         ψr = G_to_r(basis, basis.kpoints[1], ψ)[:, 1, 1]
         println(scfres.energies)
     end
+    figure(3)
+    rvecs = collect(r_vectors(basis))[:, 1, 1]  # slice along the x axis
+    x = a * [r[1] for r in rvecs]                   # only keep the x coordinate
+    (ε != 0.0) ? plot(x, ψr) : plot(x, u0.(x))
 
     Gs = [abs(G[1]) for G in G_vectors(basis, basis.kpoints[1])][:]
     nG = length(Gs)
@@ -104,6 +108,7 @@ for (i,ε) in enumerate(ε_list)
     i += 1
     if ε == 0.0
         # plot fourier
+        figure(2)
         subplot(121)
         semilogy(Gs, (seuil.(abs.(u0G))), m, label="\$ \\varepsilon = 0 \$",
                  markersize=10, markevery=20)
@@ -117,31 +122,33 @@ for (i,ε) in enumerate(ε_list)
         plot(Gs[2:end], log.(sqrt.(abs.(Gs[2:end]).^3 .* cosh.(2B .* abs.(Gs[2:end]))) ./ sqrt.(abs.(Gs[1:end-1]).^3 .* cosh.(2B .* abs.(Gs[1:end-1])))), "--",
              label="\$ \\frac{1}{(|k|^{3/2} \\sqrt{\\cosh(2B_0k)})} \$")
     else
+        εpow = Int(log10(ε))
         ψG = [ψ[k] for k=1:nG]
         ψGn = [ψ[k+1] for k=1:(nG-1)]
 
+        figure(2)
         subplot(121)
-        semilogy(Gs, (seuil.(abs.(ψG))), m, label="\$ \\varepsilon = $(ε) \$",
+        semilogy(Gs, (seuil.(abs.(ψG))), m, label="\$ \\varepsilon = 10^{$(εpow)} \$",
                  markersize=10, markevery=20)
         subplot(122)
-        plot(Gs[2:end], log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m, label="\$ \\varepsilon = $(ε) \$",
+        plot(Gs[2:end], log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m, label="\$ \\varepsilon = 10^{$(εpow)} \$",
              markersize=10, markevery=20)
 
         println(λ0)
-        println(scfres.eigenvalues[1][1]*ε)
-        println(abs(λ0 - scfres.eigenvalues[1][1]*ε))
+        println(scfres.eigenvalues[1][1])
+        println(abs(λ0 - scfres.eigenvalues[1][1]))
     end
 end
 
 # end up with legend and x labels
 subplot(121)
 xlabel("\$ |k| \$")
-xlim(-50, 1500)
+xlim(-50, 3000)
 ylim(tol/10, 1)
 legend()
 subplot(122)
 xlabel("\$ |k| \$")
 legend()
-xlim(-50, 1500)
+xlim(-50, 3000)
 ylim(-0.1, 0)
 savefig("test_decay_gp.png")

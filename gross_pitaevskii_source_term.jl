@@ -72,7 +72,7 @@ f(r) = μ * sin(r)
 source_term = ExternalFromReal(r -> f(r[1]))
 
 # list of ε's for different numerical simulations
-ε_list = [0., 1e-5, 5e-5, 0.0001, 0.001]
+ε_list = [0., 1e-5, 0.0001, 0.001]
 
 # cut function to avoid numerical noise
 seuil(x) = abs(x) < 1e-12 ? zero(x) : x
@@ -120,14 +120,19 @@ for (i,ε) in enumerate(ε_list)
     ψG = [ψ[2*k] for k =1:div(nG,2)]
     GGGs = [GGs[2*k] for k =1:div(nG,2)]
     ψGn = ψG[2:end]
-    subplot(121)
-    semilogy(GGGs, (seuil.(abs.(ψG))), m, label="\$ \\varepsilon = $(ε) \$",
-             markersize=10, markevery=2)
-    subplot(122)
     if ε != 0
-        plot(GGGs[2:end], log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m, label="\$ \\varepsilon = $(ε) \$",
+        εpow = Int(log10(ε))
+        subplot(121)
+        semilogy(GGGs, (seuil.(abs.(ψG))), m, label="\$ \\varepsilon = 10^{$(εpow)} \$",
+                 markersize=10, markevery=2)
+        subplot(122)
+        plot(GGGs[2:end], log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m, label="\$ \\varepsilon = 10^{$(εpow)} \$",
              markersize=10, markevery=4)
     else
+        subplot(121)
+        semilogy(GGGs, (seuil.(abs.(ψG))), m, label="\$ \\varepsilon = $(ε) \$",
+                 markersize=10, markevery=2)
+        subplot(122)
         plot(GGGs[2:end], log.(abs.( ψGn ./ ψG[1:end-1] )), m, label="\$ \\varepsilon = $(ε) \$",
              markersize=10, markevery=4)
     end
