@@ -30,7 +30,7 @@ function u0(x)
     cardan(μ*sin(x))
 end
 # plot u0
-figure(1, figsize=(20,10))
+figure(1, figsize=(30,15))
 ftsize = 30
 rc("font", size=ftsize, serif="Computer Modern")
 rc("text", usetex=true)
@@ -51,6 +51,8 @@ res = [u0(x + im*y) for x in rs, y in is]
 pcolormesh(rs, is, angle.(res)', cmap="hsv")
 plot(0, B, "ro")
 plot(0, -B, "ro")
+xlabel("\$ x \$")
+ylabel("\$ y \$")
 colorbar()
 savefig("u0.png")
 
@@ -77,7 +79,7 @@ source_term = ExternalFromReal(r -> f(r[1]))
 # cut function to avoid numerical noise
 seuil(x) = abs(x) < 1e-12 ? zero(x) : x
 
-figure(2, figsize=(20,10))
+figure(2, figsize=(30,15))
 ftsize = 30
 rc("font", size=ftsize, serif="Computer Modern")
 rc("text", usetex=true)

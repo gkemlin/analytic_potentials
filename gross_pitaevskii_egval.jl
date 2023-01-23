@@ -30,7 +30,7 @@ end
 B = log(β + √(β^2-1))
 
 # plot u0
-figure(1, figsize=(20,10))
+figure(1, figsize=(30,15))
 ftsize = 30
 rc("font", size=ftsize, serif="Computer Modern")
 rc("text", usetex=true)
@@ -53,6 +53,8 @@ res = [u0(x + im*y) for x in rs, y in is]
 pcolormesh(rs, is, angle.(res)')
 plot(0, B, "ro")
 plot(0, -B, "ro")
+xlabel("\$ x \$")
+ylabel("\$ y \$")
 savefig("u0_gp.png")
 
 # Set up DFTK framework for Gross-Pitaevskii
@@ -70,7 +72,7 @@ lattice = a * [[1 0 0.]; [0 0 0]; [0 0 0]]
 # cut function to avoid numerical noise
 seuil(x) = abs(x) > tol ? x : 0.0
 
-figure(2, figsize=(20,10))
+figure(2, figsize=(30,15))
 ftsize = 30
 rc("font", size=ftsize, serif="Computer Modern")
 rc("text", usetex=true)
