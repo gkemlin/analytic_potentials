@@ -36,7 +36,7 @@ function custom_direct_minimization(basis::PlaneWaveBasis{T}, source_term, ψ0;
     # computes energies and gradients
     function fg!(E, G, ψ)
         ψ = unpack(ψ)
-        ψr = G_to_r(basis, basis.kpoints[1], ψ[1][:,1])
+        ψr = ifft(basis, basis.kpoints[1], ψ[1][:,1])
         ρ = compute_density(basis, ψ, occupation)
         energies, H = energy_hamiltonian(basis, ψ, occupation; ρ)
 
@@ -45,8 +45,8 @@ function custom_direct_minimization(basis::PlaneWaveBasis{T}, source_term, ψ0;
             for ik = 1:Nk
                 mul!(G[ik], H.blocks[ik], ψ[ik])
                 G[ik] .*= 2*filled_occ
-                fG = r_to_G(basis, basis.kpoints[ik],
-                            ComplexF64.(source_term(basis).potential_values))
+                fG = fft(basis, basis.kpoints[ik],
+                         ComplexF64.(source_term(basis).potential_values))
                 G[ik] .-= 2*filled_occ*fG
             end
         end

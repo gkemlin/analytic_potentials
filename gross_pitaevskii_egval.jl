@@ -91,13 +91,13 @@ for (i,ε) in enumerate(ε_list)
 
     basis = PlaneWaveBasis(model; Ecut, kgrid)
     u0r = ExternalFromReal(r->u0(r[1]))
-    u0G = DFTK.r_to_G(basis, basis.kpoints[1], ComplexF64.(u0r(basis).potential_values))[:,1]
+    u0G = fft(basis, basis.kpoints[1], ComplexF64.(u0r(basis).potential_values))[:,1]
     ψ0 = [reshape(u0G, length(u0G), 1)]
     if ε != 0.0
         scfres = direct_minimization(basis, ψ0; tol)
         ρ = real(scfres.ρ)[:, 1, 1, 1]
         ψ = scfres.ψ[1][:, 1]
-        ψr = G_to_r(basis, basis.kpoints[1], ψ)[:, 1, 1]
+        ψr = ifft(basis, basis.kpoints[1], ψ)[:, 1, 1]
         println(scfres.energies)
     end
     figure(3)
@@ -121,9 +121,9 @@ for (i,ε) in enumerate(ε_list)
         u0Gn = [u0G[k+1] for k=1:(nG-1)]
         plot(Gs[2:end], log.(abs.( seuil.(u0Gn) ./ seuil.(u0G[1:end-1] ))), m, label="\$ \\varepsilon = 0 \$",
              markersize=10, markevery=20)
-        plot(Gs[2:end], [-B for k in Gs[2:end]], "--", label="\$ -B_0 \$")
         plot(Gs[2:end], log.(sqrt.(abs.(Gs[2:end]).^3 .* cosh.(2B .* abs.(Gs[2:end]))) ./ sqrt.(abs.(Gs[1:end-1]).^3 .* cosh.(2B .* abs.(Gs[1:end-1])))), "--",
              label="\$ \\frac{1}{(|k|^{3/2} \\sqrt{\\cosh(2B_0k)})} \$")
+        plot(Gs[2:end], [-B for k in Gs[2:end]], "--", label="\$ -B_0 \$")
     else
         εpow = Int(log10(ε))
         ψG = [ψ[k] for k=1:nG]

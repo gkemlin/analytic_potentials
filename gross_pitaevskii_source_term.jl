@@ -98,8 +98,8 @@ for (i,ε) in enumerate(ε_list)
     basis = PlaneWaveBasis(model; Ecut, kgrid)
     # u0 solution for ε = 0
     u0r = ExternalFromReal(r->u0(r[1]))
-    u0G = r_to_G(basis, basis.kpoints[1],
-                 ComplexF64.(u0r(basis).potential_values))
+    u0G = fft(basis, basis.kpoints[1],
+              ComplexF64.(u0r(basis).potential_values))
     ψ0 = [reshape(u0G, length(u0G), 1)]
     if ε != 0.0
         scfres = custom_direct_minimization(basis, source_term, ψ0; tol)
@@ -107,7 +107,7 @@ for (i,ε) in enumerate(ε_list)
         # check that u is indeed a solution
         ψ = scfres.ψ[1][:, 1]
         Hψ = scfres.ham.blocks[1] * ψ
-        Hψr = G_to_r(basis, basis.kpoints[1], Hψ)[:,1,1]
+        Hψr = ifft(basis, basis.kpoints[1], Hψ)[:,1,1]
         println("|Hψ-f| = ", abs(real(sum(Hψr - source_term(basis).potential_values[:,1,1])*basis.dvol)))
     else
         ψ = ψ0[1][:,1]

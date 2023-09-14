@@ -29,10 +29,8 @@ seuil(x) = abs(x) > tol ? x : 0.0
 # solution with scf (actually converges in one iteration)
 scfres = self_consistent_field(basis; tol, damping=0.5)
 @show scfres.eigenvalues[1][1]
-# ground state density and wave function
-ρ = real(scfres.ρ)[:, 1, 1, 1]
+# ground state
 ψ = scfres.ψ[1][:, 1]
-ψr = ifft(basis, basis.kpoints[1], ψ)[:, 1, 1]
 
 # plot Fourier coefficients and decrease rate
 figure(1, figsize=(30,15))

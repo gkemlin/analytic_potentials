@@ -16,20 +16,36 @@ Pkg.instantiate()
 ```
 to install the required dependencies.
 
-## Nonlinear Gross-Pitaevskii equation
-To generate the plots from Section 4.2.1 of the paper, just run from the
-location of this repository:
+## Linear case with V only analytic on a finite band
+To generate the plots from Section 3.4.1 of the paper, just run within the Julia
+shell:
 ```
-julia --project gross_pitaevskii_egval.jl
+include("linear_egval.jl")
+```
+Plots are then saved in `test_decay_linear_egval.jl`.
+
+## Exponential convergence of the plane wave discretization
+To generate the plots from Section 3.4.2 of the paper, just run within the Julia
+shell:
+```
+include("pw_discretization.jl")
+```
+Plots are then saved in `...`.
+
+## Nonlinear Gross-Pitaevskii equation
+To generate the plots from Section 4.2.1 of the paper, just run within the Julia
+shell:
+```
+include("gross_pitaevskii_egval.jl")
 ```
 Plots are then saved in `test_decay_gp.png` and `u0_gp.png`.
 
 
 ## Nonlinear elliptic equation
-To generate the plots from Section 4.2.2 of the paper, just run from the
-location of this repository:
+To generate the plots from Section 4.2.2 of the paper, just run within the Julia
+shell:
 ```
-julia --project gross_pitaevskii_source_term.jl
+include("gross_pitaevskii_source_term.jl")
 ```
 Plots are then saved in `test_decay.png` and `u0.png`.
 
