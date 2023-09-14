@@ -18,7 +18,7 @@ model = Model(lattice; n_electrons=1, terms,
 model = convert(Model{Double64}, model)
 
 # Set up DFTK framework for linear eigenvalue problem
-Ecut = 1e6
+Ecut = 5e5
 kgrid = (1, 1, 1)
 tol = 1e-20
 basis = PlaneWaveBasis(model; Ecut, kgrid)
@@ -27,10 +27,15 @@ basis = PlaneWaveBasis(model; Ecut, kgrid)
 seuil(x) = abs(x) > tol ? x : 0.0
 
 # solution with scf (actually converges in one iteration)
-scfres = self_consistent_field(basis; tol, damping=0.5)
-@show scfres.eigenvalues[1][1]
+ham = Hamiltonian(basis)
+res = lobpcg_hyper(ham[1],
+                   DFTK.random_orbitals(basis, basis.kpoints[1], 3);
+                   prec = PreconditionerTPA(ham[1]),
+                   maxiter=500, tol, display_progress=true)
+
+@show res.λ[1]
 # ground state
-ψ = scfres.ψ[1][:, 1]
+ψ = res.X[:, 1]
 
 # plot Fourier coefficients and decrease rate
 figure(1, figsize=(30,15))
