@@ -1,9 +1,11 @@
 [deps]
 DFTK = "acf6eb54-70d9-11e9-0013-234b7a5f5337"
+DoubleFloats = "497a8b3b-efae-58df-a0af-a86822472b78"
+GenericLinearAlgebra = "14197337-ba66-59df-a3e3-ca00e7dcff7a"
 LineSearches = "d3d80556-e9d4-5f37-9878-2ab0fcc64255"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 
 [compat]
-DFTK = "0.5.15"
+DFTK = "0.6.11"
