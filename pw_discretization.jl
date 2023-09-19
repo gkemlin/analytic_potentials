@@ -1,9 +1,11 @@
 using PyPlot
 using DFTK
 using LinearAlgebra
+using DoubleFloats
+using GenericLinearAlgebra
 
 # model
-γ = 5e2
+γ = 1e3
 V(x) = 1 / (1/γ + sin(x)^2)
 B0 = asinh(1/√γ)
 @show B0
@@ -17,64 +19,85 @@ model = convert(Model{Double64}, model)
 
 # Set up DFTK framework for linear eigenvalue problem
 kgrid = (1, 1, 1)
-tol = 1e-20
+tol = 1e-13
+# cut function to avoid numerical noise
+seuil(x) = abs(x) > tol ? x : 0.0
 
-# solve problem for various Ecuts [last Ecut is the reference one]
-Ecut_list = [1e2, 5e2, 1e3, 5e3, 1e4, 5e4, 1e6]
+# reference solution and ground state wave function / eigenvalue
+N_ref = 1e3
+Ecut_ref = N_ref^2/2
+basis_ref = PlaneWaveBasis(model; Ecut=Ecut_ref, kgrid)
+Gs = DFTK.G_vectors(basis_ref, basis_ref.kpoints[1])
+Gs = [G[1] for G in Gs]
+ham_ref = Hamiltonian(basis_ref)
+res_ref = lobpcg_hyper(ham_ref[1],
+                       DFTK.random_orbitals(basis_ref, basis_ref.kpoints[1], 2);
+                       prec = PreconditionerTPA(ham_ref[1]),
+                       maxiter=1000, tol)
+λ_ref = res_ref.λ[1]
+X_ref = res_ref.X[:,1]
+@show res_ref.n_iter
+@show λ_ref
 
-for Ecut in Ecut_list
+# solve problem for various Ecuts
+N_list = [n*1e1 for n = 1:30]
+λ_list = []
+H1_list = []
+
+for N in N_list
     # PW discretization basis
+    println("============================")
+    Ecut = N^2 / 2
+    @show Ecut
+    @show N
     basis = PlaneWaveBasis(model; Ecut, kgrid)
+    ham = Hamiltonian(basis)
+    res = lobpcg_hyper(ham[1],
+                       DFTK.random_orbitals(basis, basis.kpoints[1], 2);
+                       prec = PreconditionerTPA(ham[1]),
+                       maxiter=1000, tol)
+    @show res.n_iter
 
-    # cut function to avoid numerical noise
-    seuil(x) = abs(x) > tol ? x : 0.0
-
-    # solution with scf (actually converges in one iteration)
-    scfres = self_consistent_field(basis; tol, damping=0.5)
-    @show scfres.eigenvalues[1][1]
     # ground state
-    ψ = scfres.ψ[1][:, 1]
+    λ = res.λ[1]
+    X = res.X[:,1]
+    @show λ
 
-    # plot Fourier coefficients and decrease rate
-    figure(1, figsize=(30,15))
-    ftsize = 30
-    rc("font", size=ftsize, serif="Computer Modern")
-    rc("text", usetex=true)
-    m = "P"
+    # compute error
+    append!(λ_list, λ - λ_ref)
+    Xr = DFTK.transfer_blochwave_kpt(X, basis, basis.kpoints[1],
+                                     basis_ref, basis_ref.kpoints[1])[:,1]
+    errX = X_ref - (Xr'X_ref)*Xr
+    append!(H1_list, norm(abs2.(Gs) .* errX))
+end
 
-    # Fourier modes
-    Gs = [abs(G[1]) for G in G_vectors(basis, basis.kpoints[1])][:]
-    # solution is even because V is even
-    nG = div(length(Gs),2)
-    GGs = [Gs[2k+1] for k=0:nG]
+#  convergence of the eigenvalues and wave functions
+figure(1, figsize=(30,15))
+ftsize = 30
+rc("font", size=ftsize, serif="Computer Modern")
+rc("text", usetex=true)
+m = "P"
 
-    # Fourier coefficients to plots
-    ψG = [ψ[2k+1] for k=0:nG]
-    ψGn = [ψ[2(k+1)+1] for k=0:(nG-1)]
+subplot(121)
+semilogy(N_list, λ_list, m, label="\$\\lambda_N - \\lambda\$", markersize=10)
+semilogy(N_list, 1e-1 ./ (N_list.^2 .* exp.(2B0 .* N_list)), "--", label="\$ \\exp(-2B_0N)/N^2 \$")
+semilogy(N_list, H1_list, m, label="\$\\| u_{N} - u \\|_{H^1}\$",markersize=10)
+semilogy(N_list, 1 ./ (exp.(B0 .* N_list)), "--", label="\$ \\exp(-B_0N) \$")
+legend()
 
-    subplot(121)
-    semilogy(GGs, (seuil.(abs.(ψG))), m, label = "\$|\\widehat{u}_k|\$",
-             markersize=10, markevery=10)
-    semilogy(GGs, 1e-1 ./ sqrt.(abs.(GGs).^4 .* cosh.(2B0 .* abs.(GGs))), "--",
-             label="\$ \\frac{1}{(|k|^{4} \\sqrt{\\cosh(2B_0k)})} \$")
-    #  semilogy(GGs, 1e-5 ./ sqrt.(cosh.(2B0 .* abs.(GGs))), "--",
-    #           label="\$ \\frac{1}{\\sqrt{\\cosh(2B_0k)}} \$")
-    subplot(122)
-    plot(GGs[2:end], 1/2 * log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m,
-         markersize=10, markevery=10)
-    plot(Gs[2:end], log.(sqrt.(abs.(Gs[2:end]).^4 .* cosh.(2B0 .* abs.(Gs[2:end]))) ./ sqrt.(abs.(Gs[1:end-1]).^4 .* cosh.(2B0 .* abs.(Gs[1:end-1])))), "--",
-         label="\$ \\frac{1}{(|k|^{4} \\sqrt{\\cosh(2B_0k)})} \$")
-    plot(GGs[2:end], [-B0 for k in GGs[2:end]], "--", label="\$ -B_0 \$")
+xlabel("\$ N \$")
 
-    # end up with legend and x labels
-    subplot(121)
-    xlabel("\$ |k| \$")
-    xlim(-50, 800)
-    ylim(tol/100, 1)
-    legend()
-    subplot(122)
-    xlabel("\$ |k| \$")
-    legend()
-    xlim(-50, 800)
-    ylim(-0.5, 0)
-    savefig("test_decay_linear_egval.png")
+subplot(122)
+plot(N_list[2:end], 0.1 .* log.( λ_list[2:end] ./ λ_list[1:end-1]), m, label = "\$\\lambda_N -  \\lambda\$", markersize=10)
+plot(N_list[2:end], -0.1 .* log.((N_list[2:end].^2 .* exp.(2B0 .* N_list[2:end])) ./
+                                 (N_list[1:end-1].^2 .* exp.(2B0 .* N_list[1:end-1]))),
+    "--", label="\$ \\exp(-2B_0N)/N^2 \$")
+plot(N_list[2:end], 0.1 .* log.( H1_list[2:end] ./ H1_list[1:end-1]), m, label = "\$\\|u_N -  u\\|_{H^1}\$", markersize=10)
+plot(N_list[2:end], [-B0 for n in N_list[2:end]], "--", label = "\$-B_0 \$", )
+plot(N_list[2:end], [-2B0 for n in N_list[2:end]], "--", label = "\$-2B_0 \$", )
+ylim(-0.5,0.0)
+legend()
+
+xlabel("\$N\$")
+
+savefig("test_pw_discretization.png")
