@@ -23,7 +23,7 @@ shell:
 ```
 include("linear_egval.jl")
 ```
-Plots are then saved in `test_decay_linear_egval.jl`.
+Plots are then saved in `test_decay_linear_egval.png`.
 
 ## Exponential convergence of the plane wave discretization
 To generate the plots from Section 3.4.2 of the paper, just run within the Julia
@@ -31,7 +31,7 @@ shell:
 ```
 include("pw_discretization.jl")
 ```
-Plots are then saved in `...`.
+Plots are then saved in `test_pw_discretization.png`.
 
 ## Nonlinear Gross-Pitaevskii equation
 To generate the plots from Section 4.2.1 of the paper, just run within the Julia
