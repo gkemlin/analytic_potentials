@@ -5,7 +5,7 @@ using DoubleFloats
 using GenericLinearAlgebra
 
 # model
-γ = 1e3
+γ = 5e2
 V(x) = 1 / (1/γ + sin(x)^2)
 B0 = asinh(1/√γ)
 @show B0

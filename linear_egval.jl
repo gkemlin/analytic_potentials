@@ -63,7 +63,7 @@ semilogy(GGs, 1e-1 ./ sqrt.(abs.(GGs).^4 .* cosh.(2B0 .* abs.(GGs))), "--",
 #           label="\$ \\frac{1}{\\sqrt{\\cosh(2B_0k)}} \$")
 subplot(122)
 plot(GGs[2:end], 1/2 * log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m,
-     markersize=10, markevery=10)
+     markersize=10, markevery=10, label="\$|\\widehat{u}_k|\$")
 plot(Gs[2:end], log.(sqrt.(abs.(Gs[2:end]).^4 .* cosh.(2B0 .* abs.(Gs[2:end]))) ./ sqrt.(abs.(Gs[1:end-1]).^4 .* cosh.(2B0 .* abs.(Gs[1:end-1])))), "--",
      label="\$ \\frac{1}{(|k|^{4} \\sqrt{\\cosh(2B_0k)})} \$")
 plot(GGs[2:end], [-B0 for k in GGs[2:end]], "--", label="\$ -B_0 \$")
