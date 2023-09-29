@@ -3,7 +3,7 @@ paper on the solutions to Schrödinger equations with analytic potentials,
 available on [arXiv](https://arxiv.org/abs/2206.04954).
 
 # Dependencies
-Julia 1.8 with the following libraries:
+Julia 1.9.3 with the following libraries:
 - [DFTK.jl](https://dftk.org) 0.6.11
 - PyPlot, LineSearches, LinearAlgebra, Optim
 - For the linear cases : DoubleFloats and GenericLinearAlgebra
