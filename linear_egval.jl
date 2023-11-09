@@ -5,9 +5,9 @@ using DoubleFloats
 using GenericLinearAlgebra
 
 # model
-γ = 5e2
-V(x) = 1 / (1/γ + sin(x)^2)
-B0 = asinh(1/√γ)
+γ = 1/500
+V(x) = 1 / (γ + sin(x)^2)
+B0 = asinh(√γ)
 @show B0
 terms = [Kinetic(; scaling_factor=2),
          ExternalFromReal(r -> V(r[1]))]
