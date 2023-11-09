@@ -18,7 +18,7 @@ Pkg.instantiate()
 to install the required dependencies.
 
 ## Linear case with V only analytic on a finite band
-To generate the plots from Section 3.4.2 of the paper, just run within the Julia
+To generate the plots from Section 3.4.2 - Figure 1 of the paper, just run within the Julia
 shell:
 ```
 include("linear_egval.jl")
@@ -26,7 +26,7 @@ include("linear_egval.jl")
 Plots are then saved in `test_decay_linear_egval.png`.
 
 ## Exponential convergence of the plane wave discretization
-To generate the plots from Section 3.4.3 of the paper, just run within the Julia
+To generate the plots from Section 3.4.2 - Figure 2 of the paper, just run within the Julia
 shell:
 ```
 include("pw_discretization.jl")
