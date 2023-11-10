@@ -59,9 +59,9 @@ colorbar()
 savefig("u0_gp.png")
 
 # Set up DFTK framework for Gross-Pitaevskii
-Ecut = 10000000
+Ecut = 1000000
 kgrid = (1, 1, 1)
-tol = 1e-12
+tol = 1e-13
 
 # periodic lattice
 a = 2π
@@ -71,7 +71,7 @@ lattice = a * [[1 0 0.]; [0 0 0]; [0 0 0]]
 ε_list = [0.0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
 
 # cut function to avoid numerical noise
-seuil(x) = abs(x) > tol ? x : 0.0
+seuil(x) = abs(x) > 1e-11 ? x : 0.0
 
 figure(2, figsize=(30,15))
 ftsize = 30
@@ -94,11 +94,12 @@ for (i,ε) in enumerate(ε_list)
     u0G = fft(basis, basis.kpoints[1], ComplexF64.(u0r(basis).potential_values))[:,1]
     ψ0 = [reshape(u0G, length(u0G), 1)]
     if ε != 0.0
-        scfres = direct_minimization(basis, ψ0; tol)
+        scfres = direct_minimization(basis, ψ0; tol, maxiter=10000, show_trace=false)
         ρ = real(scfres.ρ)[:, 1, 1, 1]
         ψ = scfres.ψ[1][:, 1]
         ψr = ifft(basis, basis.kpoints[1], ψ)[:, 1, 1]
         println(scfres.energies)
+        println(scfres.optim_res)
     end
     figure(3)
     rvecs = collect(r_vectors(basis))[:, 1, 1]  # slice along the x axis
@@ -137,21 +138,21 @@ for (i,ε) in enumerate(ε_list)
         plot(Gs[2:end], log.(abs.( seuil.(ψGn) ./ seuil.(ψG[1:end-1] ))), m, label="\$ \\varepsilon = 10^{$(εpow)} \$",
              markersize=10, markevery=20)
 
-        println(λ0)
-        println(scfres.eigenvalues[1][1])
-        println(abs(λ0 - scfres.eigenvalues[1][1]))
+        println("λ0 = ", λ0)
+        println("λε = ", scfres.eigenvalues[1][1])
+        println("|λ0-λε| = ", abs(λ0 - scfres.eigenvalues[1][1]))
     end
 end
 
 # end up with legend and x labels
 subplot(121)
 xlabel("\$ |k| \$")
-xlim(-50, 3000)
-ylim(tol/10, 1)
+xlim(-50, 1450)
+ylim(tol*10, 1)
 legend()
 subplot(122)
 xlabel("\$ |k| \$")
 legend()
-xlim(-50, 3000)
+xlim(-50, 1450)
 ylim(-0.1, 0)
 savefig("test_decay_gp.png")

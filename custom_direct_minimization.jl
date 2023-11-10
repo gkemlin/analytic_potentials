@@ -65,7 +65,6 @@ function custom_direct_minimization(basis::PlaneWaveBasis{T}, source_term, ψ0;
                          optim_solver(; P, precondprep=DFTK.precondprep!,
                                       linesearch=LineSearches.HagerZhang()),
                          optim_options)
-    @show res
     ψ = unpack(res.minimizer)
 
     # We rely on the fact that the last point where fg! was called is the minimizer to

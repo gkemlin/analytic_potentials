@@ -59,7 +59,7 @@ savefig("u0.png")
 # Set up DFTK framework for Gross-Pitaevskii
 Ecut = 1000000
 kgrid = (1, 1, 1)
-tol = 1e-15
+tol = 1e-13
 
 # constant potential V≡1 and PowerNonlinearity parameters
 V(r) = 1
@@ -77,7 +77,7 @@ source_term = ExternalFromReal(r -> f(r[1]))
 ε_list = [0., 1e-5, 0.0001, 0.001]
 
 # cut function to avoid numerical noise
-seuil(x) = abs(x) < 1e-12 ? zero(x) : x
+seuil(x) = abs(x) < 1e-11 ? zero(x) : x
 
 figure(2, figsize=(30,15))
 ftsize = 30
@@ -102,8 +102,9 @@ for (i,ε) in enumerate(ε_list)
               ComplexF64.(u0r(basis).potential_values))
     ψ0 = [reshape(u0G, length(u0G), 1)]
     if ε != 0.0
-        scfres = custom_direct_minimization(basis, source_term, ψ0; tol)
+        scfres = custom_direct_minimization(basis, source_term, ψ0; tol, show_trace=false)
         println(scfres.energies)
+        println(scfres.optim_res)
         # check that u is indeed a solution
         ψ = scfres.ψ[1][:, 1]
         Hψ = scfres.ham.blocks[1] * ψ
